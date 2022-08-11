@@ -1,10 +1,19 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
+import imageUrlBuilder from "@sanity/image-url";
 import Container from "react-bootstrap/Container";
 import Navbar from "react-bootstrap/Navbar";
+import Card from "react-bootstrap/Card";
+import groq from "groq";
+import client from "../config";
 
-const Home: NextPage = () => {
+const urlFor = (source: string) => {
+  return imageUrlBuilder(client).image(source);
+};
+
+const Home: NextPage = ({ posts }: any) => {
+  console.log(posts);
   return (
     <div>
       <Head>
@@ -24,8 +33,51 @@ const Home: NextPage = () => {
           </Navbar.Brand>
         </Container>
       </Navbar>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-evenly",
+        }}
+      >
+        {posts.map((post: any, index: number) => {
+          console.log(
+            post.mainImage.asset ? post.mainImage.asset._ref : "NULL"
+          );
+          return (
+            <Card style={{ width: "18rem" }} key={index}>
+              {post.mainImage.asset && (
+                <Card.Img
+                  src={urlFor(post.mainImage.asset._ref)
+                    .width(320)
+                    .height(240)
+                    .fit("max")
+                    .auto("format")}
+                />
+              )}
+              <Card.Body>
+                <Card.Title>Card Title</Card.Title>
+                <Card.Text>
+                  Some quick example text to build on the card title and make up
+                  the bulk of the card's content.
+                </Card.Text>
+              </Card.Body>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 };
+
+export async function getStaticProps() {
+  const posts = await client.fetch(groq`
+      *[_type == "post"]
+    `);
+  return {
+    props: {
+      posts,
+    },
+  };
+}
 
 export default Home;
