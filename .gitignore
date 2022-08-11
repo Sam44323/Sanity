@@ -1,4 +1,9 @@
+# IDE
+.vscode
+
+# packages
 node_modules
+
+# hashes
 ..gpg
 .gpg
-.vscode
